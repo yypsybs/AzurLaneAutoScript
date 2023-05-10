@@ -312,6 +312,15 @@ class CampaignRun(CampaignEvent):
                 self.campaign.ensure_campaign_ui(name=self.stage, mode=mode)
             self.handle_commission_notice()
 
+            # if mode is hard, check remain count
+            if mode and mode == 'hard':
+                from module.hard.hard import OCR_HARD_REMAIN
+                remain = OCR_HARD_REMAIN.ocr(self.device.image)
+                if not remain:
+                    logger.info('Remaining number of times of hard is 0, delay task to next day')
+                    self.config.task_delay(server_update=True)
+                    break
+
             # End
             if self.triggered_stop_condition(oil_check=not self.campaign.is_in_auto_search_menu()):
                 break
