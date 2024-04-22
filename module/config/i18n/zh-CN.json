@@ -261,6 +261,10 @@
     "GameManager": {
       "name": "游戏管理器(未完成)",
       "help": ""
+    },
+    "ProjectIdentityTB": {
+      "name": "TB养成计划",
+      "help": ""
     }
   },
   "Scheduler": {
@@ -2462,6 +2466,27 @@
     "AutoRestart": {
       "name": "自动登录",
       "help": "游戏被强制结束后自动登录游戏"
+    }
+  },
+  "ProjectIdentityTB": {
+    "_info": {
+      "name": "TB养成计划",
+      "help": ""
+    },
+    "Target": {
+      "name": "养成目标",
+      "help": "",
+      "busy_fashion_model": "平面模特|安静|气质3000|体能1600|表现320",
+      "skilled_painter": "艺术家|安静|感知3000|智慧1600|想象240|细心80",
+      "popular_musician": "音乐人|安静|感知4000|乐理320",
+      "stellar_actor": "瞩目新星|温柔|气质3000|感知1600|表现240|乐理80",
+      "talented_cook": "烘焙达人|温柔|感知3000|体能1600|细心320",
+      "up_and_coming_writer": "小说作家|温柔|智慧3000|感知1600|想象320",
+      "amazing_athlete": "赛场新秀|开朗|体能4000|运动320",
+      "big_shot_businesswoman": "商业奇才|开朗|智慧3000|气质1600|实践320",
+      "lively_farm_owner": "农场能手|开朗|体能3000|智慧1600|实践240|运动80",
+      "repetitive_everyday": "日复一日|全属性1000",
+      "shut_in_life": "足不出户|不满足其它"
     }
   },
   "Storage": {

@@ -436,5 +436,8 @@ class GeneratedConfig:
     # Group `GameManager`
     GameManager_AutoRestart = True
 
+    # Group `ProjectIdentityTB`
+    ProjectIdentityTB_Target = 'shut_in_life'  # busy_fashion_model, skilled_painter, popular_musician, stellar_actor, talented_cook, up_and_coming_writer, amazing_athlete, big_shot_businesswoman, lively_farm_owner, repetitive_everyday, shut_in_life
+
     # Group `Storage`
     Storage_Storage = {}

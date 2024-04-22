@@ -169,6 +169,10 @@ class ProcessManager:
                 from module.daemon.game_manager import GameManager
 
                 GameManager(config=config_name, task="GameManager").run()
+            elif func == "ProjectIdentityTB":
+                from module.project_identity_tb.project_identity_tb import ProjectIdentityTB
+
+                ProjectIdentityTB(config=config_name, task="ProjectIdentityTB").run()
             elif func in get_available_mod():
                 mod = load_mod(func)
 

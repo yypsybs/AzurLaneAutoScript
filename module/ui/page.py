@@ -228,6 +228,11 @@ page_game_room = Page(GAME_ROOM_CHECK)
 page_academy.link(button=ACADEMY_GOTO_GAME_ROOM, destination=page_game_room)
 page_game_room.link(button=GAME_ROOM_GOTO_MAIN, destination=page_main)
 
+# ProjectIdentityTB
+page_tb = Page(TB_CHECK)
+page_dormmenu.link(button=DORMMENU_GOTO_TB, destination=page_tb)
+page_tb.link(button=TB_GOTO_MAIN, destination=page_main)
+
 # Shop
 page_shop = Page(SHOP_CHECK)
 page_main.link(button=MAIN_GOTO_SHOP, destination=page_shop)

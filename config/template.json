@@ -1870,5 +1870,13 @@
     "Storage": {
       "Storage": {}
     }
+  },
+  "ProjectIdentityTB": {
+    "ProjectIdentityTB": {
+      "Target": "shut_in_life"
+    },
+    "Storage": {
+      "Storage": {}
+    }
   }
 }
