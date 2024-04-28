@@ -79,13 +79,19 @@ def retry(func):
 
 
 class MaatouchBuilder(CommandBuilder):
-    def __init__(self, device, contact=0, handle_orientation=False):
+    def __init__(
+            self,
+            device,
+            contact=0,
+            handle_orientation=False,
+            input_method: int = 2,
+    ):
         """
         Args:
             device (MaaTouch):
         """
 
-        super().__init__(device, contact, handle_orientation)
+        super().__init__(device, contact, handle_orientation, input_method)
 
     def send(self):
         return self.device.maatouch_send(builder=self)
@@ -174,7 +180,7 @@ class MaaTouch(Connection):
 
         # CLASSPATH=/data/local/tmp/maatouch app_process / com.shxyke.MaaTouch.App
         stream = self.adb_shell(
-            ['CLASSPATH=/data/local/tmp/maatouch', 'app_process', '/', 'com.shxyke.MaaTouch.App'],
+            [f'CLASSPATH={self.config.MAATOUCH_FILEPATH_REMOTE}', 'app_process', '/', 'com.shxyke.MaaTouch.App'],
             stream=True,
             recvall=False
         )
@@ -236,12 +242,15 @@ class MaaTouch(Connection):
         )
 
     def maatouch_send(self, builder: MaatouchBuilder):
-        content = builder.to_minitouch()
-        # logger.info("send operation: {}".format(content.replace("\n", "\\n")))
+        content = builder.to_maatouch_sync()
+        logger.info("send operation: {}".format(content.replace("\n", "\\n")))
         byte_content = content.encode('utf-8')
+        import time
+        start = time.time()
         self._maatouch_stream.sendall(byte_content)
         self._maatouch_stream.recv(0)
-        self.sleep(self.maatouch_builder.delay / 1000 + builder.DEFAULT_DELAY)
+        logger.info(f'Waiting control {start - time.time()}')
+        # self.sleep(self.maatouch_builder.delay / 1000 + builder.DEFAULT_DELAY)
         builder.clear()
 
     def maatouch_install(self):
@@ -302,3 +311,10 @@ class MaaTouch(Connection):
 
         builder.up().commit()
         builder.send()
+
+
+if __name__ == '__main__':
+    self = MaaTouch('alas')
+    self.swipe_maatouch((300, 300), (800, 300))
+    self.sleep(0.5)
+    self.swipe_maatouch((800, 300), (300, 300))
