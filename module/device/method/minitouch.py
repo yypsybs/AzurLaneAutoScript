@@ -101,7 +101,8 @@ class Command:
             y: int = 0,
             ms: int = 10,
             pressure: int = 100,
-            input_method: int = 0,
+            mode: int = 0,
+            text: str = ''
     ):
         """
         See https://github.com/openstf/minitouch#writable-to-the-socket
@@ -113,6 +114,8 @@ class Command:
             y:
             ms:
             pressure:
+            mode:
+            text:
         """
         self.operation = operation
         self.contact = contact
@@ -120,7 +123,8 @@ class Command:
         self.y = y
         self.ms = ms
         self.pressure = pressure
-        self.input_method = input_method
+        self.mode = mode
+        self.text = text
 
     def to_minitouch(self) -> str:
         """
@@ -145,15 +149,29 @@ class Command:
         if self.operation == 'c':
             return f'{self.operation}\n'
         elif self.operation == 'r':
-            return f'{self.operation}\n'
+            if self.mode:
+                return f'{self.operation} {self.mode}\n'
+            else:
+                return f'{self.operation}\n'
         elif self.operation == 'd':
-            return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure}\n'
+            if self.mode:
+                return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure} {self.mode}\n'
+            else:
+                return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure}\n'
         elif self.operation == 'm':
-            return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure}\n'
+            if self.mode:
+                return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure} {self.mode}\n'
+            else:
+                return f'{self.operation} {self.contact} {self.x} {self.y} {self.pressure}\n'
         elif self.operation == 'u':
-            return f'{self.operation} {self.contact} {self.input_method}\n'
+            if self.mode:
+                return f'{self.operation} {self.contact} {self.mode}\n'
+            else:
+                return f'{self.operation} {self.ms}\n'
         elif self.operation == 'w':
             return f'{self.operation} {self.ms}\n'
+        elif self.operation == 's':
+            return f'{self.operation} {self.text}\n'
         else:
             return ''
 
@@ -207,7 +225,6 @@ class CommandBuilder:
             device,
             contact=0,
             handle_orientation=True,
-            input_method: int = 0,
     ):
         """
         Args:
@@ -218,7 +235,6 @@ class CommandBuilder:
         self.delay = 0
         self.contact = contact
         self.handle_orientation = handle_orientation
-        self.input_method = input_method
 
     @property
     def orientation(self):
@@ -260,10 +276,10 @@ class CommandBuilder:
         ))
         return self
 
-    def reset(self):
+    def reset(self, mode=0):
         """ add minitouch command: 'r\n' """
         self.commands.append(Command(
-            'r', input_method=self.input_method
+            'r', mode=mode
         ))
         return self
 
@@ -275,26 +291,26 @@ class CommandBuilder:
         self.delay += ms
         return self
 
-    def up(self):
+    def up(self, mode=0):
         """ add minitouch command: 'u <contact>\n' """
         self.commands.append(Command(
-            'u', contact=self.contact, input_method=self.input_method
+            'u', contact=self.contact, mode=mode
         ))
         return self
 
-    def down(self, x, y, pressure=100):
+    def down(self, x, y, pressure=100, mode=0):
         """ add minitouch command: 'd <contact> <x> <y> <pressure>\n' """
         x, y = self.convert(x, y)
         self.commands.append(Command(
-            'd', x=x, y=y, contact=self.contact, pressure=pressure, input_method=self.input_method
+            'd', x=x, y=y, contact=self.contact, pressure=pressure, mode=mode
         ))
         return self
 
-    def move(self, x, y, pressure=100):
+    def move(self, x, y, pressure=100, mode=0):
         """ add minitouch command: 'm <contact> <x> <y> <pressure>\n' """
         x, y = self.convert(x, y)
         self.commands.append(Command(
-            'm', x=x, y=y, contact=self.contact, pressure=pressure, input_method=self.input_method
+            'm', x=x, y=y, contact=self.contact, pressure=pressure, mode=mode
         ))
         return self
 

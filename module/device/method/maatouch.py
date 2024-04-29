@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 from functools import wraps
 
 from adbutils.errors import AdbError
@@ -8,7 +9,7 @@ from module.base.decorator import cached_property, del_cached_property, has_cach
 from module.base.timer import Timer
 from module.base.utils import *
 from module.device.connection import Connection
-from module.device.method.minitouch import CommandBuilder, insert_swipe
+from module.device.method.minitouch import CommandBuilder, insert_swipe, Command
 from module.device.method.utils import RETRY_TRIES, handle_adb_error, retry_sleep
 from module.exception import RequestHumanTakeover
 from module.logger import logger
@@ -84,17 +85,19 @@ class MaatouchBuilder(CommandBuilder):
             device,
             contact=0,
             handle_orientation=False,
-            input_method: int = 2,
     ):
         """
         Args:
             device (MaaTouch):
         """
 
-        super().__init__(device, contact, handle_orientation, input_method)
+        super().__init__(device, contact, handle_orientation)
 
     def send(self):
         return self.device.maatouch_send(builder=self)
+
+    def send_sync(self, mode=2):
+        return self.device.maatouch_send_sync(builder=self, mode=mode)
 
 
 class MaaTouchNotInstalledError(Exception):
@@ -242,15 +245,46 @@ class MaaTouch(Connection):
         )
 
     def maatouch_send(self, builder: MaatouchBuilder):
+        content = builder.to_minitouch()
+        logger.info("send operation: {}".format(content.replace("\n", "\\n")))
+        byte_content = content.encode('utf-8')
+        self._maatouch_stream.sendall(byte_content)
+        self._maatouch_stream.recv(0)
+        self.sleep(builder.delay / 1000 + builder.DEFAULT_DELAY)
+        builder.clear()
+
+    def maatouch_send_sync(self, builder: MaatouchBuilder, mode=2):
+        # Set inject mode to the last command
+        for command in builder.commands[::-1]:
+            if command.operation in ['r', 'd', 'm', 'u']:
+                command.mode = mode
+                break
+
+        # add maatouch sync command: 's <timestamp>\n'
+        timestamp = str(int(time.time() * 1000))
+        builder.commands.append(Command(
+            's', text=timestamp
+        ))
+
+        # Send
         content = builder.to_maatouch_sync()
         logger.info("send operation: {}".format(content.replace("\n", "\\n")))
         byte_content = content.encode('utf-8')
-        import time
-        start = time.time()
         self._maatouch_stream.sendall(byte_content)
         self._maatouch_stream.recv(0)
-        logger.info(f'Waiting control {start - time.time()}')
-        # self.sleep(self.maatouch_builder.delay / 1000 + builder.DEFAULT_DELAY)
+
+        # Wait until operations finished
+        start = time.time()
+        socket_out = self._maatouch_stream.makefile()
+        while 1:
+            out = socket_out.readline()
+            out = out.strip()
+            logger.info(out)
+            if out == timestamp:
+                break
+
+        logger.info(f'Waiting control {time.time() - start}')
+        self.sleep(builder.DEFAULT_DELAY)
         builder.clear()
 
     def maatouch_install(self):
@@ -282,14 +316,15 @@ class MaaTouch(Connection):
         builder = self.maatouch_builder
 
         builder.down(*points[0]).commit()
-        builder.send()
+        builder.send_sync()
 
         for point in points[1:]:
-            builder.move(*point).commit().wait(10)
-        builder.send()
+            builder.move(*point).wait(10)
+        builder.commit()
+        builder.send_sync()
 
         builder.up().commit()
-        builder.send()
+        builder.send_sync()
 
     @retry
     def drag_maatouch(self, p1, p2, point_random=(-10, -10, 10, 10)):
@@ -315,6 +350,10 @@ class MaaTouch(Connection):
 
 if __name__ == '__main__':
     self = MaaTouch('alas')
+    self.maatouch_uninstall()
+    self.maatouch_install()
+    # self.click_maatouch(300, 300)
+    # self.click_maatouch(300, 300)
+    # self.drag_maatouch((800, 300), (300, 300))
     self.swipe_maatouch((300, 300), (800, 300))
-    self.sleep(0.5)
     self.swipe_maatouch((800, 300), (300, 300))
