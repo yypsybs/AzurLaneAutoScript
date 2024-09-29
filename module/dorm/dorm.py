@@ -377,10 +377,10 @@ class RewardDorm(UI):
         FOOD_FILTER.load(self.config.Dorm_FeedFilter)
         for selected in FOOD_FILTER.apply(food):
             button = self._dorm_food.buttons[food.index(selected)]
-            if selected.amount > 50 and fill > selected.feed:
-                count = min(fill // selected.feed, selected.amount - 50)
-                self._dorm_feed_click(button=button, count=count)
-                return True
+            if selected.amount > 60 and fill > selected.feed:
+                # 只喂1个完成任务
+                self._dorm_feed_click(button=button, count=1)
+                return False
 
         return False
 
