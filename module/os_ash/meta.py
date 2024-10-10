@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from enum import Enum
 
 import module.config.server as server
@@ -67,7 +68,7 @@ class Meta(UI, MapEventHandler):
 
 
 def _server_support():
-    return server.server in ['cn', 'en', 'jp','tw']
+    return server.server in ['cn', 'en', 'jp', 'tw']
 
 
 def _server_support_dossier_auto_attack():
@@ -426,8 +427,8 @@ class OpsiAshBeacon(Meta):
 
     def _in_meta_page(self):
         return self.appear(ASH_SHOWDOWN, offset=(30, 30)) \
-               or self.appear(BEACON_LIST, offset=(20, 20)) \
-               or self.appear(DOSSIER_LIST, offset=(20, 20))
+            or self.appear(BEACON_LIST, offset=(20, 20)) \
+            or self.appear(DOSSIER_LIST, offset=(20, 20))
 
     def _ensure_meta_page(self, skip_first_screenshot=True):
         logger.info('Ensure beacon attack page')
@@ -454,7 +455,7 @@ class OpsiAshBeacon(Meta):
                 skip_first_screenshot = False
             else:
                 self.device.screenshot()
-            
+
             if self.appear(DOSSIER_LIST, offset=(20, 20)):
                 logger.info('In dossier page')
                 return True
@@ -471,6 +472,21 @@ class OpsiAshBeacon(Meta):
         self._ensure_meta_page()
         self._attack_meta()
 
+    @staticmethod
+    def next_noon_or_midnight():
+        # 获取当前时间
+        now = datetime.now()
+
+        # 获取当天的12点和24点时间
+        today_noon = now.replace(hour=12, minute=0, second=0, microsecond=0)
+        today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+
+        # 如果当前时间早于当天12点，返回当天12点，否则返回下一个24点
+        if now < today_noon:
+            return today_noon
+        else:
+            return today_midnight
+
     def run(self):
         self.ui_ensure(page_reward)
         self._begin_beacon()
@@ -479,7 +495,7 @@ class OpsiAshBeacon(Meta):
             for meta in self._meta_receive:
                 MetaReward(self.config, self.device).run(category=meta)
             self._meta_receive = []
-            self.config.task_delay(server_update=True)
+            self.config.task_delay(target=self.next_noon_or_midnight())
 
 
 class AshBeaconAssist(Meta):
