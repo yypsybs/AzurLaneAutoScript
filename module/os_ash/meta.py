@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -33,6 +34,10 @@ class MetaDigitCounter(DigitCounter):
         # 00/200 -> 100/200
         if result.startswith('00/'):
             result = '100/' + result[3:]
+
+        # 23 -> 2/3
+        if re.match(r'^[0123]3$', result):
+            result = f'{result[0]}/{result[1]}'
 
         return result
 
@@ -427,8 +432,8 @@ class OpsiAshBeacon(Meta):
 
     def _in_meta_page(self):
         return self.appear(ASH_SHOWDOWN, offset=(30, 30)) \
-            or self.appear(BEACON_LIST, offset=(20, 20)) \
-            or self.appear(DOSSIER_LIST, offset=(20, 20))
+               or self.appear(BEACON_LIST, offset=(20, 20)) \
+               or self.appear(DOSSIER_LIST, offset=(20, 20))
 
     def _ensure_meta_page(self, skip_first_screenshot=True):
         logger.info('Ensure beacon attack page')
